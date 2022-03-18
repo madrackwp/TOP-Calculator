@@ -1,0 +1,26 @@
+.calc-display{
+  border: 1px solid blue;
+}
+
+.calc-btns button{
+  border: none;
+  border-radius: 0px;
+  height: 30px;
+  width: 30px;
+  background: #f9d186;
+  margin: 3px;
+}
+
+.calc-btns .calc-btns-num{
+  display: flex;
+  flex-direction: column;
+}
+
+.calc-btns{
+  display: flex;
+}
+
+.calc-btns-op{
+  display: flex;
+  flex-direction: column;
+}
