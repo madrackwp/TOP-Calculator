@@ -1,8 +1,16 @@
 const calcDisplay = document.querySelector(".calc-display input")
-var backBtn = document.querySelector(".calc-back-btn")
+const backBtn = document.querySelector(".calc-back-btn")
 const decimalBtn = document.querySelector("#calc-btn-decimal")
+const calcClearBtn = document.querySelector(".calc-clear")
+const numBtns = document.querySelectorAll(".calc-btns .calc-btns-num button")
+const opBtns = document.querySelectorAll(".calc-btns-op button")
+const eqBtn = document.querySelector("#calc-eq")
+var selectedOperator = null
+var value2;
+var value1;
+
 function add(a, b){
-  return a + b;
+  return parseFloat(a) + parseFloat(b);
 }
 
 function subtract(a, b){
@@ -49,59 +57,56 @@ function operate(operator, a ,b){
   return result
 }
 
-var value1 = {
-  value: null,
-  awaitingInput: true,
-  decimal: false
-}
-var value2 = {
-  value: null,
-  awaitingInput: true,
-  decimal: false
-}
-var selectedOperator = null
-// var value2AwaitInput = true
-
 function clearCalculator(){
-  value1 = null;
-  value2 = null;
+  value1 = {
+    value: null, //Float/int
+    awaitingInput: true,
+    decimal: false,
+    decimalPoint: 10
+  }
+  value2 = {
+    value: null,
+    awaitingInput: true,
+    decimal: false,
+    decimalPoint: 10
+  }
   calcDisplay.value= 0;
   selectedOperator = null
-  value2AwaitInput = false
+  // value2AwaitInput = false
 }
-document.querySelector(".calc-clear").addEventListener("click", clearCalculator)
 
-document.querySelectorAll(".calc-btns .calc-btns-num button").forEach(
-  (button) => {
-    button.addEventListener("click", ()=>{
-      // console.log(button.innerHTML)
-      if (selectedOperator === null){
-        if (value1.value === null){
-          value1.value = parseInt(button.innerHTML)
-        } else {
-          value1.value *= 10
-          value1.value += parseInt(button.innerHTML)
-        }
-      } else {
-        
-        if (value2.awaitingInput){
-          calcDisplay.value = 0
-          value2.awaitingInput = false
-        }
-        value2.value *= 10
-        value2.value += parseInt(button.innerHTML)
-      }
-      
-      if (parseInt(calcDisplay.value) === 0){
-        calcDisplay.value = button.innerHTML
-      } else {
-        calcDisplay.value += button.innerHTML
-      }
-    })
-  }
-)
+function backSpace(valueField){
+  if (valueField.value.split("").pop() === "."){
+    valueField.decimal = false
+  } 
+  valueField.value = valueField.value.slice(0,-1)
+  return valueField
+}
 
-document.querySelectorAll(".calc-btns-op button").forEach(
+calcClearBtn.addEventListener("click", clearCalculator)
+
+numBtns.forEach((button) =>{
+  button.addEventListener("click", ()=>{
+    if (value1.awaitingInput === true){
+      if (value1.value === null){
+        value1.value = button.innerHTML
+      } else {
+        value1.value += button.innerHTML
+      }
+      calcDisplay.value = value1.value
+    } else {
+      if (value2.value === null){
+        value2.value = button.innerHTML
+      } else {
+        value2.value += button.innerHTML
+      }
+      calcDisplay.value = value2.value
+    }
+    
+  })
+})
+
+opBtns.forEach(
   (button)=>{
     button.addEventListener("click", ()=>{
       if (selectedOperator !== null){
@@ -111,6 +116,7 @@ document.querySelectorAll(".calc-btns-op button").forEach(
         value2.awaitingInput = true
       } else {
         calcDisplay.value = 0;
+        value1.awaitingInput = false
       }
       if (button.id === "op-add"){
         selectedOperator = "add"
@@ -124,7 +130,7 @@ document.querySelectorAll(".calc-btns-op button").forEach(
     })
 })
 
-document.querySelector("#calc-eq").addEventListener("click", ()=>{
+eqBtn.addEventListener("click", ()=>{
   if (value1.value === null || value2.value === null){
     window.alert("Missing numbers")
   } else{
@@ -133,21 +139,37 @@ document.querySelector("#calc-eq").addEventListener("click", ()=>{
 })
 
 backBtn.addEventListener("click", ()=>{
-  if (value1.value !== null && value2.awaitingInput === true){
+  if (value1.awaitingInput === true ){
     //Will remove subtrack from value1
-    value1.value = backSpace(value1.value)
+    value1 = backSpace(value1)
     calcDisplay.value = value1.value
-  } else if (value2.value !== null){
+  } else {
     //Remove from value2
-    value2.value = backSpace(value2.value)
+    value2 = backSpace(value2)
     calcDisplay.value = value2.value
   }
 })
 
-function backSpace(valueField){
-  if (valueField % 10 === 0){
-    return 0
+decimalBtn.addEventListener("click", ()=>{
+  if (value1.value === null){
+    //This condition is when no values have been inputted and that means its a 0.XXX type of input
+    value1.decimalPoint = true
+  } else if (value1.value !== null && value1.decimal === false){
+    //Adding a decimal to value1
+    value1.decimalPoint = true
+  } else if (value1.value !== null && value1.decimal === true){
+    //Throw an error as there is already a decimal
+    window.alert("Already a floating point number")
+  } else if (value2.value === null){
+    //Add a decimal to 0
+    value2.decimalPoint = true
+  } else if (value2.value !== null && value2.decimal === false){
+    //Add a decimal to value2
+    value2.decimalPoint = true
   } else {
-    return parseInt(valueField/10)
+    //Throw the same error as before
+    window.alert("Already a floating point number")
   }
-}
+})
+
+clearCalculator()
